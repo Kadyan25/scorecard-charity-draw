@@ -67,11 +67,17 @@ export const drawPublishSchema = z.object({
   drawId: z.string().uuid(),
 });
 
-export const winnerReviewSchema = z.object({
-  winnerId: z.string().uuid(),
-  decision: z.enum(["approved", "rejected"]),
-  note: z.string().max(500).optional(),
-});
+export const winnerReviewSchema = z
+  .object({
+    winnerId: z.string().uuid(),
+    decision: z.enum(["approved", "rejected"]),
+    note: z.string().trim().max(500).optional(),
+  })
+  // A rejected winner needs to know what to fix before resubmitting.
+  .refine((review) => review.decision === "approved" || Boolean(review.note), {
+    message: "Please tell the winner why their proof was rejected",
+    path: ["note"],
+  });
 
 export const winnerPayoutSchema = z.object({
   winnerId: z.string().uuid(),

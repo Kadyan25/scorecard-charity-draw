@@ -216,6 +216,25 @@ select pg_temp.expect_error(
   $$select public.publish_draw('00000000-0000-0000-0000-0000000000ff', null)$$,
   'P0002', 'publishing an unknown draw is refused');
 
+-- A prize for Bob, so the column-privilege checks below have a row he owns.
+insert into draws (id, period_month, status, numbers)
+values ('00000000-0000-0000-0000-0000000000d4', '2021-04-01', 'published', '{1,2,3,4,5}');
+insert into draw_entries (id, draw_id, user_id, numbers, matched_count, tier, prize_cents)
+values ('00000000-0000-0000-0000-0000000000e3', '00000000-0000-0000-0000-0000000000d4',
+        '00000000-0000-0000-0000-00000000000b', '{1,2,3,40,41}', 3, 3, 500);
+insert into winners (draw_id, draw_entry_id, user_id, tier, prize_cents)
+values ('00000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-0000000000e3',
+        '00000000-0000-0000-0000-00000000000b', 3, 500);
+
+-- Charity bounds apply to every writer, including the service role.
+select pg_temp.expect_error(
+  $$update profiles set charity_percent = 5 where id = '00000000-0000-0000-0000-00000000000a'$$,
+  '23514', 'charity percentage below the 10% floor is rejected by the database');
+
+select pg_temp.expect_error(
+  $$update profiles set charity_percent = 90 where id = '00000000-0000-0000-0000-00000000000a'$$,
+  '23514', 'charity percentage above the ceiling is rejected by the database');
+
 -- Row level security ----------------------------------------------------------
 
 set local role authenticated;
@@ -252,6 +271,32 @@ select pg_temp.expect_error(
 select pg_temp.expect_error(
   $$select public.publish_draw('00000000-0000-0000-0000-0000000000d3', null)$$,
   '42501', 'a signed-in user cannot call publish_draw directly');
+
+-- Column privileges: RLS picks rows, grants pick columns (migration 0007).
+select pg_temp.expect_error(
+  $$update winners set prize_cents = 99999999
+    where user_id = '00000000-0000-0000-0000-00000000000b'$$,
+  '42501', 'a winner cannot rewrite their own prize');
+
+select pg_temp.expect_error(
+  $$update winners set verification_status = 'approved', payout_status = 'paid'
+    where user_id = '00000000-0000-0000-0000-00000000000b'$$,
+  '42501', 'a winner cannot approve or pay themselves');
+
+select pg_temp.expect_error(
+  $$update profiles set email = 'spoof@test.local'
+    where id = '00000000-0000-0000-0000-00000000000b'$$,
+  '42501', 'a user cannot change the email on their profile row');
+
+select pg_temp.expect_error(
+  $$update scores set user_id = '00000000-0000-0000-0000-00000000000a'
+    where user_id = '00000000-0000-0000-0000-00000000000b'$$,
+  '42501', 'a user cannot move a score to another account');
+
+select pg_temp.expect_error(
+  $$update profiles set charity_percent = 0
+    where id = '00000000-0000-0000-0000-00000000000b'$$,
+  '23514', 'a user cannot set their contribution below the floor');
 
 select pg_temp.expect_error(
   $$update profiles set stripe_customer_id = 'cus_someone_else'
