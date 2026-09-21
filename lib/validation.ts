@@ -59,7 +59,7 @@ export const donationSchema = z.object({
 });
 
 export const drawSimulateSchema = z.object({
-  periodMonth: isoDate,
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Choose a month to draw"),
   mode: z.enum(["random", "algorithmic"]),
 });
 

@@ -166,6 +166,56 @@ select pg_temp.expect(
   (select count(*) = 2 from draws where period_month = '2020-01-01'),
   'simulations may coexist with a published draw');
 
+-- Publishing a draw ------------------------------------------------------------
+
+insert into draws (id, period_month, status, numbers, pool_total_cents)
+values ('00000000-0000-0000-0000-0000000000d1', '2021-03-01', 'simulated', '{1,2,3,4,5}', 10000),
+       ('00000000-0000-0000-0000-0000000000d2', '2021-03-01', 'simulated', '{6,7,8,9,10}', 10000);
+
+insert into draw_entries (draw_id, user_id, numbers, matched_count, tier, prize_cents)
+values ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-00000000000a', '{1,2,3,4,5}', 5, 5, 4000),
+       ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-00000000000b', '{1,2,9,10,11}', 2, null, 0);
+
+select public.publish_draw('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-00000000000b');
+
+select pg_temp.expect(
+  (select status = 'published' and published_at is not null from draws
+   where id = '00000000-0000-0000-0000-0000000000d1'),
+  'publish marks the draw published');
+
+select pg_temp.expect(
+  (select count(*) = 1 and bool_and(tier = 5 and prize_cents = 4000) from winners
+   where draw_id = '00000000-0000-0000-0000-0000000000d1'),
+  'publish creates a winner row only for prize-winning entries');
+
+select pg_temp.expect(
+  not exists (select 1 from draws where id = '00000000-0000-0000-0000-0000000000d2'),
+  'publish discards stale simulations for the same month');
+
+select pg_temp.expect(
+  exists (select 1 from audit_log where action = 'draw.published'
+          and entity_id = '00000000-0000-0000-0000-0000000000d1'),
+  'publish writes an audit record');
+
+select pg_temp.expect_error(
+  $$select public.publish_draw('00000000-0000-0000-0000-0000000000d1', null)$$,
+  'P0001', 'publishing twice is refused');
+
+insert into draws (id, period_month, status, numbers)
+values ('00000000-0000-0000-0000-0000000000d3', '2021-03-01', 'simulated', '{6,7,8,9,10}');
+
+select pg_temp.expect_error(
+  $$select public.publish_draw('00000000-0000-0000-0000-0000000000d3', null)$$,
+  '23505', 'a second published draw for the same month is refused');
+
+select pg_temp.expect(
+  (select count(*) = 1 from winners where draw_id = '00000000-0000-0000-0000-0000000000d1'),
+  'a refused publish leaves existing winners untouched');
+
+select pg_temp.expect_error(
+  $$select public.publish_draw('00000000-0000-0000-0000-0000000000ff', null)$$,
+  'P0002', 'publishing an unknown draw is refused');
+
 -- Row level security ----------------------------------------------------------
 
 set local role authenticated;
@@ -186,7 +236,7 @@ select pg_temp.expect(
   'RLS: a user cannot read another user''s payments');
 
 select pg_temp.expect(
-  (select count(*) = 1 from draws),
+  (select count(*) = 1 from draws where period_month = '2020-01-01'),
   'RLS: users see published draws but not simulations');
 
 select pg_temp.expect_error(
@@ -198,6 +248,10 @@ select pg_temp.expect_error(
 select pg_temp.expect_error(
   $$update profiles set role = 'admin' where id = '00000000-0000-0000-0000-00000000000b'$$,
   '42501', 'RLS: a user cannot promote themselves to admin');
+
+select pg_temp.expect_error(
+  $$select public.publish_draw('00000000-0000-0000-0000-0000000000d3', null)$$,
+  '42501', 'a signed-in user cannot call publish_draw directly');
 
 select pg_temp.expect_error(
   $$update profiles set stripe_customer_id = 'cus_someone_else'

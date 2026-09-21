@@ -319,6 +319,7 @@ export type Database = {
     Functions: {
       is_admin: { Args: Record<never, never>; Returns: boolean };
       setting_int: { Args: { p_key: string }; Returns: number };
+      publish_draw: { Args: { p_draw_id: string; p_actor: string }; Returns: undefined };
       charity_impact: {
         Args: Record<never, never>;
         Returns: { charity_id: string; supporters: number; raised_cents: number }[];

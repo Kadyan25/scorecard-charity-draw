@@ -34,6 +34,11 @@
   --color-rose: #b91c1c;
   --color-rose-soft: #fee2e2;
 
+  /* Chart marks. Validated pair (dataviz validator, light surface): passes
+     lightness, chroma, CVD separation and 3:1 contrast. */
+  --color-data-win: #c2410c;
+  --color-data-base: #2f6db0;
+
   --color-line: #e4dbcf;
   --color-line-strong: #d3c6b5;
 
