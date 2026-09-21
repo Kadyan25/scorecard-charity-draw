@@ -183,6 +183,15 @@ select pg_temp.expect_error(
   $$update profiles set role = 'admin' where id = '00000000-0000-0000-0000-00000000000b'$$,
   '42501', 'RLS: a user cannot promote themselves to admin');
 
+select pg_temp.expect_error(
+  $$update profiles set stripe_customer_id = 'cus_someone_else'
+    where id = '00000000-0000-0000-0000-00000000000b'$$,
+  '42501', 'RLS: a user cannot repoint their Stripe customer');
+
+select pg_temp.expect(
+  (select count(*) = 0 from stripe_events),
+  'RLS: a user cannot read the Stripe event log');
+
 -- Editing a different profile matches no rows rather than erroring.
 update profiles set full_name = 'Hacked' where id = '00000000-0000-0000-0000-00000000000a';
 

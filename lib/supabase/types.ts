@@ -77,6 +77,7 @@ export type ProfileRow = {
   role: UserRole;
   charity_id: string | null;
   charity_percent: number;
+  stripe_customer_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -195,6 +196,12 @@ export type WinnerRow = {
   created_at: string;
 };
 
+export type StripeEventRow = {
+  id: string;
+  type: string;
+  processed_at: string;
+};
+
 export type AuditLogRow = {
   id: string;
   actor_id: string | null;
@@ -238,7 +245,7 @@ export type Database = {
       >;
       profiles: TableDef<
         ProfileRow,
-        "full_name" | "role" | "charity_id" | "charity_percent"
+        "full_name" | "role" | "charity_id" | "charity_percent" | "stripe_customer_id"
       >;
       plans: TableDef<
         PlanRow,
@@ -305,6 +312,7 @@ export type Database = {
         | "paid_at"
       >;
       audit_log: TableDef<AuditLogRow, "actor_id" | "entity_id" | "meta">;
+      stripe_events: TableDef<StripeEventRow, "processed_at">;
     };
     Views: Record<never, never>;
     Functions: {
