@@ -18,7 +18,8 @@
   /* Ink */
   --color-ink: #1c1917;
   --color-ink-muted: #57534e;
-  --color-ink-subtle: #8a827b;
+  /* 4.85:1 on canvas — passes AA for the small print it carries. */
+  --color-ink-subtle: #736b65;
 
   /* Ember - the single vivid accent, used for action and emphasis */
   --color-ember: #c2410c;
@@ -27,7 +28,8 @@
   --color-ember-wash: #fff4ec;
 
   /* Support */
-  --color-moss: #4d7c52;
+  /* 4.81:1 on moss-soft, where it is used as badge text. */
+  --color-moss: #456f49;
   --color-moss-soft: #dcefdd;
   --color-clay: #b45309;
   --color-clay-soft: #fef3c7;
@@ -38,6 +40,9 @@
      lightness, chroma, CVD separation and 3:1 contrast. */
   --color-data-win: #c2410c;
   --color-data-base: #2f6db0;
+  /* Money-split bar, ordered charity | platform | prize pool so the green and
+     ember never sit side by side (the deutan-confusable pair). Validated. */
+  --color-data-charity: #3f7d4a;
 
   --color-line: #e4dbcf;
   --color-line-strong: #d3c6b5;
