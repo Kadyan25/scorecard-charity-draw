@@ -24,6 +24,13 @@ import { loadSettings } from "@/services/settings";
 
 type Admin = ReturnType<typeof createSupabaseAdminClient>;
 
+/**
+ * The Stripe object belongs to no member we know — typically a member whose
+ * account was deleted before their subscription ended. Retrying can never
+ * succeed, so the webhook acknowledges these instead of failing.
+ */
+export class UnknownMemberError extends Error {}
+
 async function userIdForCustomer(admin: Admin, customerId: string | null): Promise<string | null> {
   if (!customerId) return null;
   const { data, error } = await admin
@@ -54,7 +61,7 @@ export async function syncSubscription(subscription: Stripe.Subscription): Promi
     subscription.metadata.user_id ??
     null;
   if (!userId) {
-    throw new Error(`No member found for Stripe subscription ${subscription.id}`);
+    throw new UnknownMemberError(`No member found for Stripe subscription ${subscription.id}`);
   }
 
   const { error } = await admin.from("subscriptions").upsert(
@@ -87,7 +94,7 @@ async function subscriptionRowId(admin: Admin, stripeSubscriptionId: string | nu
 export async function recordPaidInvoice(invoice: Stripe.Invoice): Promise<void> {
   const admin = createSupabaseAdminClient();
   const userId = await userIdForCustomer(admin, expandableId(invoice.customer));
-  if (!userId) throw new Error(`No member found for Stripe invoice ${invoice.id}`);
+  if (!userId) throw new UnknownMemberError(`No member found for Stripe invoice ${invoice.id}`);
 
   const { data: profile, error } = await admin
     .from("profiles")

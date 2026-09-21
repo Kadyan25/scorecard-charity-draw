@@ -97,6 +97,34 @@ export async function createCheckoutSession(userId: string, planCode: string): P
   return session.url;
 }
 
+const PORTAL_TAG = "digital-heroes";
+
+/**
+ * The Billing Portal needs a saved configuration, and a brand-new Stripe
+ * account has none — so "Manage billing" would fail on first deploy. Reuse the
+ * account default if there is one, otherwise find or create ours (tagged so
+ * repeated calls do not pile up duplicates).
+ */
+async function portalConfigurationId(): Promise<string | undefined> {
+  const configs = await stripe().billingPortal.configurations.list({ active: true, limit: 100 });
+  const ours = configs.data.find((config) => config.metadata?.app === PORTAL_TAG);
+  if (ours) return ours.id;
+  if (configs.data.some((config) => config.is_default)) return undefined;
+
+  const created = await stripe().billingPortal.configurations.create({
+    metadata: { app: PORTAL_TAG },
+    business_profile: { headline: "Manage your Digital Heroes membership" },
+    features: {
+      invoice_history: { enabled: true },
+      payment_method_update: { enabled: true },
+      customer_update: { enabled: true, allowed_updates: ["email", "name"] },
+      // Cancelling keeps access until the paid period ends (PRD 04 lifecycle).
+      subscription_cancel: { enabled: true, mode: "at_period_end" },
+    },
+  });
+  return created.id;
+}
+
 export async function createPortalSession(userId: string): Promise<string> {
   const { data, error } = await createSupabaseAdminClient()
     .from("profiles")
@@ -110,6 +138,7 @@ export async function createPortalSession(userId: string): Promise<string> {
 
   const portal = await stripe().billingPortal.sessions.create({
     customer: data.stripe_customer_id,
+    configuration: await portalConfigurationId(),
     return_url: `${clientEnv.NEXT_PUBLIC_SITE_URL}/dashboard/billing`,
   });
   return portal.url;

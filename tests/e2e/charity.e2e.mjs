@@ -62,4 +62,14 @@ check("donation under £1 refused", tiny.status === 400, JSON.stringify(tiny.bod
 const gift = await client("")("POST", "/api/donations", { charityId: greenfield, amountCents: 1000 });
 check("visitor donation reaches payment step", gift.status === 503 || (gift.status === 200 && gift.body?.url), JSON.stringify(gift.body));
 
+// With Stripe configured that created a real pending donation; remove it so
+// the suite leaves no trace (completion itself is covered by the Stripe suite).
+if (gift.status === 200) {
+  const { createClient } = await import("@supabase/supabase-js");
+  const service = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  const sessionId = new URL(gift.body.url).pathname.split("/").pop()?.split("#")[0];
+  await service.from("donations").delete().eq("status", "pending").eq("charity_id", greenfield).eq("amount_cents", 1000)
+    .or(sessionId ? `stripe_checkout_session_id.eq.${sessionId},stripe_checkout_session_id.is.null` : "stripe_checkout_session_id.is.null");
+}
+
 process.exitCode = done() === 0 ? 0 : 1;

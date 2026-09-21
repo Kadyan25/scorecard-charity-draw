@@ -1,14 +1,15 @@
 // Shared plumbing for the HTTP end-to-end suites.
 import fs from "node:fs";
 
-export const BASE = process.env.E2E_BASE_URL ?? "http://localhost:3000";
-
 export const env = Object.fromEntries(
   fs.readFileSync(".env.local", "utf8")
     .split(/\r?\n/)
     .filter((line) => line.includes("=") && !line.startsWith("#"))
     .map((line) => [line.slice(0, line.indexOf("=")), line.slice(line.indexOf("=") + 1)]),
 );
+
+// Targets whichever origin the app is configured for, unless overridden.
+export const BASE = process.env.E2E_BASE_URL ?? env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export async function login(email, password) {
   const res = await fetch(`${BASE}/api/auth/login`, {

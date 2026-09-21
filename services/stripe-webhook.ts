@@ -4,7 +4,7 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { invoiceSubscriptionId } from "@/services/billing";
-import { recordPaidInvoice, syncSubscription } from "@/services/billing-sync";
+import { recordPaidInvoice, syncSubscription, UnknownMemberError } from "@/services/billing-sync";
 import { completeDonation } from "@/services/donation";
 
 async function syncById(subscriptionId: string | null): Promise<void> {
@@ -63,9 +63,19 @@ async function apply(event: Stripe.Event): Promise<void> {
   }
 }
 
-/** Handlers are idempotent; the event log just avoids redundant Stripe calls. */
+/**
+ * Handlers are idempotent; the event log just avoids redundant Stripe calls.
+ * Anything thrown here becomes a 500 and Stripe retries it — right for a
+ * database blip, wrong for an event that can never apply, so those are
+ * acknowledged and logged instead.
+ */
 export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   if (await alreadyProcessed(event.id)) return;
-  await apply(event);
+  try {
+    await apply(event);
+  } catch (error) {
+    if (!(error instanceof UnknownMemberError)) throw error;
+    console.warn(`Stripe event ${event.id} (${event.type}) skipped: ${error.message}`);
+  }
   await markProcessed(event);
 }
