@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pickGoverningSubscription, resolveAccess } from "@/services/subscription";
+import { adminSubscriptionActions, pickGoverningSubscription, resolveAccess } from "@/services/subscription";
 
 const NOW = new Date("2026-09-21T12:00:00Z");
 const FUTURE = "2026-10-21T12:00:00Z";
@@ -104,5 +104,27 @@ describe("pickGoverningSubscription", () => {
 
   it("returns null for no rows", () => {
     expect(pickGoverningSubscription([])).toBeNull();
+  });
+});
+
+describe("adminSubscriptionActions", () => {
+  const live = { state: "active" as const, hasAccess: true, periodEnd: FUTURE };
+  const none = { state: "none" as const, hasAccess: false, periodEnd: null };
+
+  it("offers a complimentary grant to members without access", () => {
+    expect(adminSubscriptionActions(null, none)).toEqual(["grant_comp"]);
+    expect(adminSubscriptionActions({ stripeSubscriptionId: "sub_1", cancelAtPeriodEnd: false }, { ...none, state: "lapsed" })).toEqual(["grant_comp"]);
+  });
+
+  it("offers cancellation for a renewing Stripe subscription", () => {
+    expect(adminSubscriptionActions({ stripeSubscriptionId: "sub_1", cancelAtPeriodEnd: false }, live)).toEqual(["cancel_at_period_end", "cancel_now"]);
+  });
+
+  it("offers resume for a Stripe subscription scheduled to cancel", () => {
+    expect(adminSubscriptionActions({ stripeSubscriptionId: "sub_1", cancelAtPeriodEnd: true }, { ...live, state: "cancelling" })).toEqual(["resume", "cancel_now"]);
+  });
+
+  it("only offers ending a complimentary grant", () => {
+    expect(adminSubscriptionActions({ stripeSubscriptionId: null, cancelAtPeriodEnd: false }, live)).toEqual(["end_comp"]);
   });
 });

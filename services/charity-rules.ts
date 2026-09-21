@@ -56,3 +56,15 @@ export function initialsFor(name: string): string {
     .map((word) => word[0].toUpperCase())
     .join("");
 }
+
+/** URL slug from a charity name: "The Caddie Fund!" -> "the-caddie-fund". */
+export function slugify(name: string): string {
+  return name
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "") // strip accents that NFKD split off
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}

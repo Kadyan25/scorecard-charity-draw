@@ -79,3 +79,30 @@ export function validateCharityPercent(
   }
   return null;
 }
+
+export interface SettingsUpdate {
+  prizePoolPercent: number;
+  charityPercentMin: number;
+  charityPercentMax: number;
+  tierSplit: TierSplitPercent;
+}
+
+/**
+ * Checks an admin's proposed settings as a whole. Each rule protects money:
+ * a tier split that is not 100% creates or destroys prize money, and a charity
+ * ceiling plus prize share above 100% makes invoices impossible to split.
+ */
+export function validateSettingsUpdate(update: SettingsUpdate): string | null {
+  const whole = (value: number) => Number.isInteger(value) && value >= 0 && value <= 100;
+  const values = [update.prizePoolPercent, update.charityPercentMin, update.charityPercentMax, update.tierSplit[5], update.tierSplit[4], update.tierSplit[3]];
+  if (!values.every(whole)) return "Every percentage must be a whole number from 0 to 100.";
+  if (update.charityPercentMin < 10) return "The PRD sets a 10% minimum charity contribution.";
+  if (update.charityPercentMin > update.charityPercentMax) return "The charity minimum cannot be above the maximum.";
+  if (update.charityPercentMax + update.prizePoolPercent > 100) {
+    return "Charity maximum plus prize pool share cannot exceed 100%.";
+  }
+  if (update.tierSplit[5] + update.tierSplit[4] + update.tierSplit[3] !== 100) {
+    return "The three prize tiers must add up to exactly 100%.";
+  }
+  return null;
+}

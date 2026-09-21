@@ -83,25 +83,6 @@ export const winnerPayoutSchema = z.object({
   winnerId: z.string().uuid(),
 });
 
-export const charityUpsertSchema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string().min(2).max(120),
-  slug: z
-    .string()
-    .min(2)
-    .max(120)
-    .regex(/^[a-z0-9-]+$/, "Slug may contain lowercase letters, numbers and hyphens"),
-  tagline: z.string().max(200).optional().nullable(),
-  description: z.string().max(5000).default(""),
-  mission: z.string().max(5000).optional().nullable(),
-  category: z.string().min(2).max(60).default("General"),
-  logoUrl: z.string().url().optional().nullable(),
-  heroImageUrl: z.string().url().optional().nullable(),
-  websiteUrl: z.string().url().optional().nullable(),
-  isFeatured: z.boolean().default(false),
-  isActive: z.boolean().default(true),
-});
-
 // PRD section 08.1: a charity is chosen at signup, not bolted on afterwards.
 export const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -121,4 +102,59 @@ export type SignUpInput = z.infer<typeof signUpSchema>;
 export type ScoreInput = z.infer<typeof scoreInputSchema>;
 export type CharitySelection = z.infer<typeof charitySelectionSchema>;
 export type DrawSimulateInput = z.infer<typeof drawSimulateSchema>;
-export type CharityUpsert = z.infer<typeof charityUpsertSchema>;
+
+export const adminProfileSchema = z.object({
+  fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(120),
+  charityId: z.string().uuid("Choose a charity"),
+  charityPercent: z.number().int(),
+});
+
+export const adminSubscriptionActionSchema = z.object({
+  action: z.enum(["cancel_at_period_end", "resume", "cancel_now", "grant_comp", "end_comp"]),
+});
+
+export const userIdSchema = z.string().uuid("That member could not be found");
+
+const optionalText = (max: number) =>
+  z.string().trim().max(max).transform((value) => (value === "" ? null : value)).nullable().optional();
+
+export const adminCharitySchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(120),
+  slug: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9-]*$/, "Slug may only contain lowercase letters, numbers and hyphens")
+    .max(80)
+    .optional(),
+  tagline: optionalText(200),
+  description: z.string().trim().max(5000).default(""),
+  mission: optionalText(2000),
+  category: z.string().trim().min(2, "Choose a category").max(60),
+  websiteUrl: z
+    .union([z.literal(""), z.string().url("Website must be a full URL, including https://")])
+    .nullable()
+    .optional(),
+  isFeatured: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+});
+
+export const charityEventSchema = z.object({
+  title: z.string().trim().min(3, "Give the event a title").max(160),
+  description: optionalText(1000),
+  eventDate: isoDate,
+  location: optionalText(160),
+});
+
+export const recordIdSchema = z.string().uuid("That record could not be found");
+
+export type AdminCharityInput = z.infer<typeof adminCharitySchema>;
+export type CharityEventInput = z.infer<typeof charityEventSchema>;
+
+const wholePercent = z.number().int("Use whole percentages").min(0).max(100);
+
+export const adminSettingsSchema = z.object({
+  prizePoolPercent: wholePercent,
+  charityPercentMin: wholePercent,
+  charityPercentMax: wholePercent,
+  tierSplit: z.object({ 5: wholePercent, 4: wholePercent, 3: wholePercent }),
+});

@@ -4,6 +4,7 @@ import {
   initialsFor,
   normaliseCategory,
   sanitizeSearchTerm,
+  slugify,
 } from "@/services/charity-rules";
 
 describe("sanitizeSearchTerm", () => {
@@ -72,5 +73,19 @@ describe("initialsFor", () => {
 
   it("handles a single word", () => {
     expect(initialsFor("Birdie")).toBe("B");
+  });
+});
+
+describe("slugify", () => {
+  it("lowercases and hyphenates", () => {
+    expect(slugify("The Caddie Fund")).toBe("the-caddie-fund");
+  });
+
+  it("drops punctuation and accents, spells out ampersands", () => {
+    expect(slugify("  Café & Community!! ")).toBe("cafe-and-community");
+  });
+
+  it("never produces leading or trailing hyphens", () => {
+    expect(slugify("--Open Green Spaces--")).toBe("open-green-spaces");
   });
 });

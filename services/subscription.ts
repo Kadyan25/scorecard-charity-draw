@@ -82,3 +82,29 @@ export function pickGoverningSubscription<
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   )[0];
 }
+
+export type AdminSubscriptionAction =
+  | "cancel_at_period_end" // Stripe: stop renewing, keep access to period end
+  | "resume" // Stripe: undo a scheduled cancellation
+  | "cancel_now" // Stripe: end immediately
+  | "grant_comp" // complimentary 30 days, no payment, no prize pool share
+  | "end_comp"; // end a complimentary grant
+
+export interface AdminSubscriptionView {
+  stripeSubscriptionId: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+/**
+ * Which actions an admin may take for a member right now. Stripe-backed
+ * subscriptions are changed through Stripe so billing and access never
+ * disagree; complimentary access exists only in our database.
+ */
+export function adminSubscriptionActions(
+  subscription: AdminSubscriptionView | null,
+  access: Access,
+): AdminSubscriptionAction[] {
+  if (!subscription || !access.hasAccess) return ["grant_comp"];
+  if (!subscription.stripeSubscriptionId) return ["end_comp"];
+  return subscription.cancelAtPeriodEnd ? ["resume", "cancel_now"] : ["cancel_at_period_end", "cancel_now"];
+}

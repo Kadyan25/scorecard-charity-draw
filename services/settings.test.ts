@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SETTINGS, parseSettings, validateCharityPercent } from "@/services/settings";
+import { DEFAULT_SETTINGS, parseSettings, validateCharityPercent, validateSettingsUpdate } from "@/services/settings";
 
 describe("parseSettings", () => {
   it("reads every configured value", () => {
@@ -62,5 +62,34 @@ describe("validateCharityPercent", () => {
   it("rejects a ceiling that would starve the prize pool", () => {
     const loose = { charityPercentMin: 10, charityPercentMax: 90, prizePoolPercent: 30 };
     expect(validateCharityPercent(80, loose)).toMatch(/prize pool/);
+  });
+});
+
+describe("validateSettingsUpdate", () => {
+  const valid = { prizePoolPercent: 30, charityPercentMin: 10, charityPercentMax: 50, tierSplit: { 5: 40, 4: 35, 3: 25 } };
+
+  it("accepts the PRD defaults", () => {
+    expect(validateSettingsUpdate(valid)).toBeNull();
+  });
+
+  it("refuses a tier split that does not total 100", () => {
+    expect(validateSettingsUpdate({ ...valid, tierSplit: { 5: 50, 4: 35, 3: 25 } })).toMatch(/100%/);
+  });
+
+  it("refuses a charity minimum below the PRD's 10%", () => {
+    expect(validateSettingsUpdate({ ...valid, charityPercentMin: 5 })).toMatch(/10%/);
+  });
+
+  it("refuses a minimum above the maximum", () => {
+    expect(validateSettingsUpdate({ ...valid, charityPercentMin: 60, charityPercentMax: 50 })).toMatch(/minimum/);
+  });
+
+  it("refuses a ceiling that would leave invoices unsplittable", () => {
+    expect(validateSettingsUpdate({ ...valid, charityPercentMax: 75 })).toMatch(/exceed 100%/);
+  });
+
+  it("refuses fractional or out-of-range values", () => {
+    expect(validateSettingsUpdate({ ...valid, prizePoolPercent: 30.5 })).toMatch(/whole number/);
+    expect(validateSettingsUpdate({ ...valid, prizePoolPercent: -1 })).toMatch(/whole number/);
   });
 });

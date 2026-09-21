@@ -11,7 +11,16 @@ import type { ScoreRow as Score } from "@/lib/supabase/types";
 
 type Mode = "view" | "edit" | "confirm-delete";
 
-export function ScoreRow({ score, maxDate }: { score: Score; maxDate: string }) {
+export function ScoreRow({
+  score,
+  maxDate,
+  itemBaseUrl = "/api/scores",
+}: {
+  score: Score;
+  maxDate: string;
+  /** Admins edit a member's scores through their own endpoint. */
+  itemBaseUrl?: string;
+}) {
   const { run, error, setError, pending, send } = useScoreMutation();
   const [mode, setMode] = useState<Mode>("view");
   const [value, setValue] = useState(String(score.value));
@@ -25,12 +34,12 @@ export function ScoreRow({ score, maxDate }: { score: Score; maxDate: string }) 
   }
 
   async function save() {
-    const ok = await run(() => send(`/api/scores/${score.id}`, { value: Number(value), playedOn }, "PATCH"));
+    const ok = await run(() => send(`${itemBaseUrl}/${score.id}`, { value: Number(value), playedOn }, "PATCH"));
     if (ok) setMode("view");
   }
 
   async function remove() {
-    await run(() => send(`/api/scores/${score.id}`, undefined, "DELETE"));
+    await run(() => send(`${itemBaseUrl}/${score.id}`, undefined, "DELETE"));
   }
 
   if (mode === "edit") {

@@ -42,17 +42,22 @@ async function activeSubscribers(admin: Admin, now: Date) {
   const byUser = new Map<string, typeof subscriptions>();
   for (const row of subscriptions) byUser.set(row.user_id, [...(byUser.get(row.user_id) ?? []), row]);
 
-  const active = new Map<string, ContributingSubscriber>();
+  // Every member with access, mapped to what they pay. Complimentary access
+  // (granted by an admin, no plan) enters draws but contributes nothing.
+  const active = new Map<string, ContributingSubscriber | null>();
   for (const [userId, rows] of byUser) {
     const governing = pickGoverningSubscription(
       rows.map((row) => ({ ...row, currentPeriodEnd: row.current_period_end, cancelAtPeriodEnd: row.cancel_at_period_end, createdAt: row.created_at })),
     );
-    const plan = governing?.plan_id ? planById.get(governing.plan_id) : undefined;
-    if (governing && plan && resolveAccess(governing, now).hasAccess) {
-      active.set(userId, { amountCents: plan.amount_cents, interval: plan.interval });
-    }
+    if (!governing || !resolveAccess(governing, now).hasAccess) continue;
+    const plan = governing.plan_id ? planById.get(governing.plan_id) : undefined;
+    active.set(userId, plan ? { amountCents: plan.amount_cents, interval: plan.interval } : null);
   }
   return active;
+}
+
+function contributors(active: Map<string, ContributingSubscriber | null>): ContributingSubscriber[] {
+  return [...active.values()].filter((value): value is ContributingSubscriber => value !== null);
 }
 
 async function scoresByUser(admin: Admin): Promise<Map<string, number[]>> {
@@ -92,7 +97,7 @@ export async function gatherDrawInputs(period: string, now: Date = new Date()): 
   return {
     tickets: selectEligibleTickets(members),
     activeSubscriberCount: active.size,
-    contributionCents: accruePoolCents([...active.values()], settings.prizePoolPercent),
+    contributionCents: accruePoolCents(contributors(active), settings.prizePoolPercent),
     rolloverInCents: previous?.rollover_out_cents ?? 0,
     latestPublishedPeriod: latest?.period_month ?? null,
     tierSplit: settings.tierSplit,
@@ -118,7 +123,7 @@ export async function upcomingDraw(now: Date = new Date()): Promise<UpcomingDraw
     activeSubscribers(admin, now),
     latestPublishedBefore(admin, null),
   ]);
-  const contribution = accruePoolCents([...active.values()], settings.prizePoolPercent);
+  const contribution = accruePoolCents(contributors(active), settings.prizePoolPercent);
   const rolloverInCents = latest?.rollover_out_cents ?? 0;
 
   return {

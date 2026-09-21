@@ -320,6 +320,7 @@ export type Database = {
       is_admin: { Args: Record<never, never>; Returns: boolean };
       setting_int: { Args: { p_key: string }; Returns: number };
       publish_draw: { Args: { p_draw_id: string; p_actor: string }; Returns: undefined };
+      admin_report: { Args: Record<never, never>; Returns: Json };
       charity_impact: {
         Args: Record<never, never>;
         Returns: { charity_id: string; supporters: number; raised_cents: number }[];

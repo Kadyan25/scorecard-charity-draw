@@ -14,7 +14,16 @@ function localToday(): string {
   return new Date().toLocaleDateString("en-CA");
 }
 
-export function ScoreEntryForm({ maxDate, nextToReplace }: { maxDate: string; nextToReplace: ScoreLike | null }) {
+export function ScoreEntryForm({
+  maxDate,
+  nextToReplace,
+  createUrl = "/api/scores",
+}: {
+  maxDate: string;
+  nextToReplace: ScoreLike | null;
+  /** Admins add scores for a member through their own endpoint. */
+  createUrl?: string;
+}) {
   const { run, error, pending, send } = useScoreMutation();
   const [value, setValue] = useState("");
   const [playedOn, setPlayedOn] = useState("");
@@ -24,7 +33,7 @@ export function ScoreEntryForm({ maxDate, nextToReplace }: { maxDate: string; ne
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const ok = await run(() => send("/api/scores", { value: Number(value), playedOn }));
+    const ok = await run(() => send(createUrl, { value: Number(value), playedOn }));
     if (ok) setValue("");
   }
 
