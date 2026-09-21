@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test:db": "bash scripts/test-db.sh",
     "db:seed-users": "node --env-file=.env.local scripts/seed-users.mjs",
-    "test:e2e": "node tests/e2e/run.mjs"
+    "test:e2e": "node tests/e2e/run.mjs",
+    "db:seed-demo": "node --env-file=.env.local scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
