@@ -104,8 +104,24 @@ select pg_temp.expect_error(
 
 select pg_temp.expect_error(
   $$insert into scores (user_id, value, played_on)
-    values ('00000000-0000-0000-0000-00000000000b', 30, current_date + 1)$$,
+    values ('00000000-0000-0000-0000-00000000000b', 30, current_date + 2)$$,
   '23514', 'future-dated score is rejected');
+
+-- Editing a score onto a date that already has one hits the same rule as
+-- inserting it: the one-per-date constraint applies to updates too.
+select pg_temp.expect_error(
+  $$update scores set played_on = current_date
+    where user_id = '00000000-0000-0000-0000-00000000000a' and played_on = current_date - 8$$,
+  '23505', 'a score cannot be edited onto a date that already has one');
+
+-- Tomorrow is allowed: a golfer ahead of UTC is already on tomorrow's date.
+insert into scores (user_id, value, played_on)
+values ('00000000-0000-0000-0000-00000000000a', 44, current_date + 1);
+
+select pg_temp.expect(
+  exists (select 1 from scores
+          where user_id = '00000000-0000-0000-0000-00000000000a' and played_on = current_date + 1),
+  'one day of timezone slack is permitted');
 
 -- A user with fewer than five scores may backdate freely.
 insert into scores (user_id, value, played_on)
@@ -192,6 +208,16 @@ select pg_temp.expect(
   (select count(*) = 0 from stripe_events),
   'RLS: a user cannot read the Stripe event log');
 
+-- A member can edit and delete their own scores.
+update scores set value = 31 where user_id = '00000000-0000-0000-0000-00000000000b';
+
+select pg_temp.expect(
+  (select value = 31 from scores where user_id = '00000000-0000-0000-0000-00000000000b'),
+  'RLS: a user can edit their own score');
+
+-- ...but an edit aimed at another member's score touches nothing.
+update scores set value = 1 where user_id = '00000000-0000-0000-0000-00000000000a';
+
 -- Editing a different profile matches no rows rather than erroring.
 update profiles set full_name = 'Hacked' where id = '00000000-0000-0000-0000-00000000000a';
 
@@ -200,6 +226,11 @@ reset role;
 select pg_temp.expect(
   (select full_name = 'Alice' from profiles where id = '00000000-0000-0000-0000-00000000000a'),
   'RLS: a user cannot edit another user''s profile');
+
+select pg_temp.expect(
+  not exists (select 1 from scores
+              where user_id = '00000000-0000-0000-0000-00000000000a' and value = 1),
+  'RLS: a user cannot edit another user''s scores');
 
 -- Admin visibility --------------------------------------------------------------
 

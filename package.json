@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "test:db": "bash scripts/test-db.sh",
-    "db:seed-users": "node --env-file=.env.local scripts/seed-users.mjs"
+    "db:seed-users": "node --env-file=.env.local scripts/seed-users.mjs",
+    "test:e2e": "node tests/e2e/scores.e2e.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

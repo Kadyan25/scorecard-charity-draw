@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { NUMBER_MAX, NUMBER_MIN } from "@/services/draw";
+import { latestAllowedPlayDate } from "@/services/score-rules";
 
 /**
  * Every request boundary parses through one of these. Nothing reaches a service
@@ -19,15 +20,21 @@ export const scoreInputSchema = z.object({
     .int("Stableford score must be a whole number")
     .min(NUMBER_MIN, `Score must be at least ${NUMBER_MIN}`)
     .max(NUMBER_MAX, `Score cannot exceed ${NUMBER_MAX}`),
+  // ISO dates compare correctly as strings; see latestAllowedPlayDate for why
+  // the limit is a day beyond today.
   playedOn: isoDate.refine(
-    (value) => new Date(`${value}T00:00:00Z`) <= new Date(),
+    (value) => value <= latestAllowedPlayDate(),
     "You cannot record a round that has not been played yet",
   ),
 });
 
-export const scoreUpdateSchema = scoreInputSchema.partial().extend({
-  id: z.string().uuid(),
-});
+export const scoreUpdateSchema = scoreInputSchema
+  .partial()
+  .refine((patch) => patch.value !== undefined || patch.playedOn !== undefined, {
+    message: "Nothing to update",
+  });
+
+export const scoreIdSchema = z.string().uuid("That score could not be found");
 
 export const charitySelectionSchema = z.object({
   charityId: z.string().uuid(),
