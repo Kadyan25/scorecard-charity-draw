@@ -232,6 +232,36 @@ select pg_temp.expect(
               where user_id = '00000000-0000-0000-0000-00000000000a' and value = 1),
   'RLS: a user cannot edit another user''s scores');
 
+-- Anonymous visitors ---------------------------------------------------------
+
+-- A real anonymous request carries no subject claim; clear the one left over
+-- from the member section above, or auth.uid() would still resolve to Bob.
+set local role anon;
+set local request.jwt.claims = '{"role":"anon"}';
+set local request.jwt.claim.sub = '';
+
+select pg_temp.expect(
+  auth.uid() is null,
+  'anon requests have no user identity');
+
+select pg_temp.expect(
+  (select count(*) > 0 from public.charity_impact()),
+  'anon can read aggregate charity impact');
+
+select pg_temp.expect(
+  (select count(*) = 0 from profiles),
+  'RLS: anon cannot read profiles');
+
+select pg_temp.expect(
+  (select count(*) = 0 from payments),
+  'RLS: anon cannot read payments');
+
+select pg_temp.expect(
+  (select count(*) = 0 from scores),
+  'RLS: anon cannot read scores');
+
+reset role;
+
 -- Admin visibility --------------------------------------------------------------
 
 update profiles set role = 'admin' where id = '00000000-0000-0000-0000-00000000000b';

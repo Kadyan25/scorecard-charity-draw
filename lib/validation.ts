@@ -50,8 +50,12 @@ export const checkoutSchema = z.object({
 });
 
 export const donationSchema = z.object({
-  charityId: z.string().uuid(),
-  amountCents: z.number().int().min(100, "Minimum donation is 1.00"),
+  charityId: z.string().uuid("Please choose a charity"),
+  amountCents: z
+    .number()
+    .int("Donation must be a whole number of pence")
+    .min(100, "The minimum donation is £1")
+    .max(1_000_000, "For gifts over £10,000 please contact the charity directly"),
 });
 
 export const drawSimulateSchema = z.object({

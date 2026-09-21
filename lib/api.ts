@@ -39,6 +39,13 @@ export async function apiUser(): Promise<ApiViewer> {
   return { userId: data.user.id, role: profile.role };
 }
 
+/** For routes open to visitors that behave differently for members. */
+export async function apiOptionalUser(): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
+}
+
 export async function apiSubscriber(): Promise<ApiViewer> {
   const viewer = await apiUser();
   const access = await loadAccess(viewer.userId);

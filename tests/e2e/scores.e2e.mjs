@@ -4,40 +4,9 @@
 //
 // Needs the dev server up, `npm run db:seed-users` run, and the demo golfer
 // holding an active subscription. Cleans up its own scores, so it is repeatable.
-import fs from "node:fs";
+import { client, createChecker, day, env, login } from "./helpers.mjs";
 
-const BASE = process.env.E2E_BASE_URL ?? "http://localhost:3000";
-const env = Object.fromEntries(
-  fs.readFileSync(".env.local", "utf8")
-    .split(/\r?\n/).filter((l) => l.includes("="))
-    .map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]),
-);
-
-async function login(email, password) {
-  const res = await fetch(`${BASE}/api/auth/login`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error(`login failed ${res.status}`);
-  return res.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
-}
-
-function client(cookie) {
-  return async (method, path, body) => {
-    const res = await fetch(`${BASE}${path}`, {
-      method, headers: { "Content-Type": "application/json", cookie },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-    return { status: res.status, body: await res.json().catch(() => null) };
-  };
-}
-
-const day = (offset) => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
-let failures = 0;
-function check(label, condition, detail = "") {
-  console.log(`${condition ? "PASS" : "FAIL"}  ${label}${condition ? "" : `  -> ${detail}`}`);
-  if (!condition) failures += 1;
-}
+const { check, done } = createChecker("scores");
 
 const api = client(await login(env.SEED_USER_EMAIL, env.SEED_USER_PASSWORD));
 
@@ -103,5 +72,4 @@ check("non-subscriber blocked (402)", blocked.status === 402, JSON.stringify(blo
 const anon = await client("")("POST", "/api/scores", { value: 20, playedOn: day(-1) });
 check("signed-out blocked (401)", anon.status === 401);
 
-console.log(failures === 0 ? "\nALL SCORE SCENARIOS PASSED" : `\n${failures} FAILED`);
-process.exit(failures === 0 ? 0 : 1);
+process.exitCode = done() === 0 ? 0 : 1;

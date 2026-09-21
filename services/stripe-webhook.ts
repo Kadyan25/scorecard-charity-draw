@@ -5,6 +5,7 @@ import { stripe } from "@/lib/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { invoiceSubscriptionId } from "@/services/billing";
 import { recordPaidInvoice, syncSubscription } from "@/services/billing-sync";
+import { completeDonation } from "@/services/donation";
 
 async function syncById(subscriptionId: string | null): Promise<void> {
   if (!subscriptionId) return;
@@ -39,6 +40,8 @@ async function apply(event: Stripe.Event): Promise<void> {
       const session = event.data.object;
       if (session.mode === "subscription") {
         await syncById(typeof session.subscription === "string" ? session.subscription : session.subscription?.id ?? null);
+      } else if (session.mode === "payment") {
+        await completeDonation(session);
       }
       return;
     }

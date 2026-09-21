@@ -135,6 +135,7 @@ export type DonationRow = {
   currency: string;
   status: PaymentStatus;
   stripe_payment_intent_id: string | null;
+  stripe_checkout_session_id: string | null;
   created_at: string;
 };
 
@@ -277,7 +278,7 @@ export type Database = {
       >;
       donations: TableDef<
         DonationRow,
-        "user_id" | "currency" | "status" | "stripe_payment_intent_id"
+        "user_id" | "currency" | "status" | "stripe_payment_intent_id" | "stripe_checkout_session_id"
       >;
       scores: TableDef<ScoreRow>;
       draws: TableDef<
@@ -318,6 +319,10 @@ export type Database = {
     Functions: {
       is_admin: { Args: Record<never, never>; Returns: boolean };
       setting_int: { Args: { p_key: string }; Returns: number };
+      charity_impact: {
+        Args: Record<never, never>;
+        Returns: { charity_id: string; supporters: number; raised_cents: number }[];
+      };
     };
     Enums: {
       user_role: UserRole;
