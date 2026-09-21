@@ -1,8 +1,11 @@
 // Shared plumbing for the HTTP end-to-end suites.
 import fs from "node:fs";
 
+// E2E_ENV_FILE lets the same suites run against the deployed site (.env.cloud).
+const envFile = process.env.E2E_ENV_FILE ?? ".env.local";
+
 export const env = Object.fromEntries(
-  fs.readFileSync(".env.local", "utf8")
+  fs.readFileSync(envFile, "utf8")
     .split(/\r?\n/)
     .filter((line) => line.includes("=") && !line.startsWith("#"))
     .map((line) => [line.slice(0, line.indexOf("=")), line.slice(line.indexOf("=") + 1)]),

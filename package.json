@@ -13,7 +13,12 @@
     "test:db": "bash scripts/test-db.sh",
     "db:seed-users": "node --env-file=.env.local scripts/seed-users.mjs",
     "test:e2e": "node tests/e2e/run.mjs",
-    "db:seed-demo": "node --env-file=.env.local scripts/seed-demo.mjs"
+    "db:seed-demo": "node --env-file=.env.local scripts/seed-demo.mjs",
+    "db:push": "node --env-file=.env.local scripts/db-push.mjs",
+    "db:push:seed": "node --env-file=.env.local scripts/db-push.mjs --seed",
+    "db:push:cloud": "node --env-file=.env.cloud scripts/db-push.mjs --seed",
+    "db:seed-users:cloud": "node --env-file=.env.cloud scripts/seed-users.mjs",
+    "db:seed-demo:cloud": "node --env-file=.env.cloud scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -34,12 +39,13 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.13.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^9",
     "eslint-config-next": "15.5.25",
+    "pg": "^8.23.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^8.3.0",

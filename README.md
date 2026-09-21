@@ -5,7 +5,7 @@ in a monthly prize draw, and a share of every payment goes to a charity they cho
 
 Built from the Digital Heroes PRD (Level 1).
 
-- **Live site:** _add the deployed URL_
+- **Live site:** https://digital-heroes-ai-counsellor1.vercel.app
 - **Stack:** Next.js 15 (App Router) · TypeScript · Supabase (Postgres, Auth, Storage) · Stripe · Tailwind v4 · Vercel
 
 ---
@@ -14,8 +14,8 @@ Built from the Digital Heroes PRD (Level 1).
 
 | Role | Email | Password |
 |---|---|---|
-| Administrator | _see submission_ | _see submission_ |
-| Member | _see submission_ | _see submission_ |
+| Administrator | `admin@digitalheroes.test` | `dTT9YEIZTMZY` |
+| Member | `golfer@digitalheroes.test` | `MfdwERvOrhGJ` |
 
 Payments run in **Stripe test mode** — use card `4242 4242 4242 4242`, any future expiry, any CVC.
 
