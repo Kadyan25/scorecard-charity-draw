@@ -90,13 +90,18 @@ async function subscriptionManagement(member, admin) {
   check("access removed after ending comp (402)", (await canScore(member.api)) === 402);
 
   if (!stripe) return check("Stripe configured for subscription actions", false);
-  const customer = await stripe.customers.create({ email: member.email, metadata: { user_id: member.id } });
-  state.customer = customer.id;
-  await service.from("profiles").update({ stripe_customer_id: customer.id }).eq("id", member.id);
-  const pm = await stripe.paymentMethods.attach("pm_card_visa", { customer: customer.id });
-  await stripe.customers.update(customer.id, { invoice_settings: { default_payment_method: pm.id } });
+  // Go through our checkout endpoint first: it creates the Stripe customer and
+  // the price (both are made on demand), exactly as a real member would.
+  check("checkout prepares customer and price", (await member.api("POST", "/api/stripe/checkout", { planCode: "monthly" })).status === 200);
+  const { data: withCustomer } = await service.from("profiles").select("stripe_customer_id").eq("id", member.id).single();
+  const customerId = withCustomer.stripe_customer_id;
+  state.customer = customerId;
   const { data: plan } = await service.from("plans").select("stripe_price_id").eq("code", "monthly").single();
-  const sub = await stripe.subscriptions.create({ customer: customer.id, items: [{ price: plan.stripe_price_id }] });
+  check("plan is linked to a Stripe price", Boolean(customerId && plan.stripe_price_id), { customerId, price: plan.stripe_price_id });
+
+  const pm = await stripe.paymentMethods.attach("pm_card_visa", { customer: customerId });
+  await stripe.customers.update(customerId, { invoice_settings: { default_payment_method: pm.id } });
+  const sub = await stripe.subscriptions.create({ customer: customerId, items: [{ price: plan.stripe_price_id }] });
   await waitFor(async () => (await latestSub(member.id))?.stripe_subscription_id === sub.id && (await latestSub(member.id)).status === "active");
 
   const act = (action) => admin.api("POST", `/api/admin/users/${member.id}/subscription`, { action });

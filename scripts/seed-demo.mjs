@@ -99,6 +99,34 @@ async function createMembers(charities, plans) {
   return created;
 }
 
+const DEMO_GOLFER_SCORES = [7, 12, 31, 44, 20];
+
+/**
+ * The account evaluators sign in as. It already exists (db:seed-users), so it
+ * is given the same footing as the demo members: a plan, five scores and a
+ * payment — otherwise its dashboard would be empty on a fresh database.
+ */
+async function equipDemoGolfer(userId, charity, plans) {
+  const plan = plans.find((p) => p.code === "monthly");
+  await db.from("subscriptions").delete().eq("user_id", userId);
+  await db.from("scores").delete().eq("user_id", userId);
+  await db.from("payments").delete().eq("user_id", userId).is("stripe_invoice_id", null);
+
+  await db.from("profiles").update({ charity_id: charity.id, charity_percent: 15 }).eq("id", userId);
+  await db.from("subscriptions").insert({
+    user_id: userId, plan_id: plan.id, status: "active",
+    current_period_start: daysAgo(20), current_period_end: new Date(Date.now() + 10 * 86_400_000).toISOString(),
+  });
+  await db.from("scores").insert(DEMO_GOLFER_SCORES.map((value, i) => ({ user_id: userId, value, played_on: dateAgo(2 + i * 5) })));
+  await db.from("payments").insert({
+    user_id: userId, amount_cents: plan.amount_cents, currency: plan.currency, status: "succeeded", paid_at: daysAgo(20),
+    charity_id_snapshot: charity.id, charity_percent_snapshot: 15,
+    charity_amount_cents: percentOf(plan.amount_cents, 15),
+    prize_pool_amount_cents: percentOf(plan.amount_cents, 30),
+    platform_amount_cents: plan.amount_cents - percentOf(plan.amount_cents, 15) - percentOf(plan.amount_cents, 30),
+  });
+}
+
 /** Contribution accrual, matching services/draw-engine.ts (yearly counts as 1/12). */
 function accrue(members, plans) {
   const numerator = members.reduce((sum, member) => {
@@ -128,7 +156,7 @@ async function publishMainDraw(members, contribution, rolloverIn, demoUserId) {
   const pools = { 5: percentOf(pool, 40), 4: percentOf(pool, 35) };
   pools[3] = pool - pools[5] - pools[4];
 
-  const entrants = [...members, { id: demoUserId, key: "demo", scores: [7, 12, 31, 44, 20], outcome: "unsubmitted" }];
+  const entrants = [...members, { id: demoUserId, key: "demo", scores: DEMO_GOLFER_SCORES, outcome: "unsubmitted" }];
   const scored = entrants.map((m) => ({ ...m, matches: distinctMatches(m.scores), tier: tierOf(distinctMatches(m.scores)) }));
   const counts = { 5: 0, 4: 0, 3: 0 };
   for (const entry of scored) if (entry.tier) counts[entry.tier] += 1;
@@ -203,6 +231,7 @@ async function main() {
   if (!demoUser) throw new Error("Run db:seed-users first: the demo member is missing.");
 
   const members = await createMembers(charities, plans);
+  await equipDemoGolfer(demoUser.id, charities[0], plans);
   const contribution = accrue([...MEMBERS, { plan: "monthly" }], plans);
   const first = await publishEmptyDraw(contribution);
   const main = await publishMainDraw(members, contribution, first.rollover_out_cents, demoUser.id);
