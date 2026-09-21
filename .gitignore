@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# supabase local stack
+/supabase/.branches
+/supabase/.temp
+
+# source PRD - the company's document, not ours to publish
+/docs
+
+# local working docs - README.md is the only markdown that ships
+/CLAUDE.md
+/architecture.md
+/build-plan.md
+/handoff.md
+/session.md
+/issues.md
+/git-state.md
+/IMPLEMENTATION.md
+/STATE.md
+
+# editor / agent local config
+/.claude

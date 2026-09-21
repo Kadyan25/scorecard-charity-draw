@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Warm editorial palette.
+ *
+ * PRD section 12 is explicit: this must not read as a golf website. So the base
+ * is paper and ink rather than turf, the accent is a warm ember rather than
+ * club green, and the only green in the system is a muted moss used sparingly
+ * for positive states - never as brand identity.
+ */
+
+@theme {
+  /* Paper */
+  --color-canvas: #faf6f0;
+  --color-canvas-raised: #fffdfa;
+  --color-canvas-sunken: #f2ece3;
+
+  /* Ink */
+  --color-ink: #1c1917;
+  --color-ink-muted: #57534e;
+  --color-ink-subtle: #8a827b;
+
+  /* Ember - the single vivid accent, used for action and emphasis */
+  --color-ember: #c2410c;
+  --color-ember-strong: #9a3412;
+  --color-ember-soft: #fed7aa;
+  --color-ember-wash: #fff4ec;
+
+  /* Support */
+  --color-moss: #4d7c52;
+  --color-moss-soft: #dcefdd;
+  --color-clay: #b45309;
+  --color-clay-soft: #fef3c7;
+  --color-rose: #b91c1c;
+  --color-rose-soft: #fee2e2;
+
+  --color-line: #e4dbcf;
+  --color-line-strong: #d3c6b5;
+
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-sans-body), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 0.875rem;
+
+  --shadow-lift: 0 1px 2px rgb(28 25 23 / 0.04), 0 8px 24px -12px rgb(28 25 23 / 0.16);
+  --shadow-raised: 0 2px 4px rgb(28 25 23 / 0.05), 0 18px 40px -20px rgb(28 25 23 / 0.24);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  /* Numbers read as a set of drawn balls, so they need to align in columns. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Scroll reveal. Motion is additive - content is fully readable without it. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(1rem);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* PRD section 12 asks for motion throughout, which makes honouring this
+   preference a requirement rather than a nicety. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }
