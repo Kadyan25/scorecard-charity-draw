@@ -3,7 +3,7 @@
 A subscription platform where a golfer's **last five Stableford scores are their numbers**
 in a monthly prize draw, and a share of every payment goes to a charity they choose.
 
-- **Live site:** https://digital-heroes-ai-counsellor1.vercel.app
+- **Live site:** https://scorecard-charity-draw.vercel.app
 - **Stack:** Next.js 15 (App Router) · TypeScript · Supabase (Postgres, Auth, Storage) · Stripe · Tailwind v4 · Vercel
 
 ---
