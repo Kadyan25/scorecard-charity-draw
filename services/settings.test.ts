@@ -68,7 +68,7 @@ describe("validateCharityPercent", () => {
 describe("validateSettingsUpdate", () => {
   const valid = { prizePoolPercent: 30, charityPercentMin: 10, charityPercentMax: 50, tierSplit: { 5: 40, 4: 35, 3: 25 } };
 
-  it("accepts the PRD defaults", () => {
+  it("accepts the shipped defaults", () => {
     expect(validateSettingsUpdate(valid)).toBeNull();
   });
 
@@ -76,7 +76,7 @@ describe("validateSettingsUpdate", () => {
     expect(validateSettingsUpdate({ ...valid, tierSplit: { 5: 50, 4: 35, 3: 25 } })).toMatch(/100%/);
   });
 
-  it("refuses a charity minimum below the PRD's 10%", () => {
+  it("refuses a charity minimum below the 10% floor", () => {
     expect(validateSettingsUpdate({ ...valid, charityPercentMin: 5 })).toMatch(/10%/);
   });
 

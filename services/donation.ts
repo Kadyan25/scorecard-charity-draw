@@ -7,7 +7,7 @@ import { stripe } from "@/lib/stripe";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 /**
- * One-off donations (PRD section 08.1), independent of any subscription.
+ * One-off donations, independent of any subscription.
  *
  * The donation row is written as `pending` before the donor leaves for Stripe
  * and only marked `succeeded` by the webhook, so an abandoned checkout never

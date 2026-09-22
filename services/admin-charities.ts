@@ -9,7 +9,7 @@ import type { AdminCharityInput, CharityEventInput } from "@/lib/validation";
 import { slugify } from "@/services/charity-rules";
 import { detectImageType, MAX_PROOF_BYTES } from "@/services/winner-rules";
 
-/** Charity management (PRD 11: add, edit, delete charities; content and media). */
+/** Charity management: add, edit and delete charities, plus content and media. */
 
 const MEDIA_BUCKET = "charity-media";
 

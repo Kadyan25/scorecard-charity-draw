@@ -1,4 +1,4 @@
-// End-to-end check of PRD section 09 (winner verification and payouts).
+// End-to-end check of winner verification and payouts.
 // Builds its own winner, drives the full lifecycle through the real API, and
 // removes everything it created.
 import { randomBytes } from "node:crypto";

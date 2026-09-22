@@ -12,7 +12,7 @@ import {
 } from "@/services/subscription";
 
 /**
- * Admin reads across members (PRD 11: "View and edit user profiles").
+ * Admin reads across members, for the user-management surface.
  * Service role, because admins see everyone; callers must have run requireAdmin.
  */
 

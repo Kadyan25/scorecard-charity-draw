@@ -3,8 +3,6 @@
 A subscription platform where a golfer's **last five Stableford scores are their numbers**
 in a monthly prize draw, and a share of every payment goes to a charity they choose.
 
-Built from the Digital Heroes PRD (Level 1).
-
 - **Live site:** https://digital-heroes-ai-counsellor1.vercel.app
 - **Stack:** Next.js 15 (App Router) · TypeScript · Supabase (Postgres, Auth, Storage) · Stripe · Tailwind v4 · Vercel
 
@@ -34,6 +32,8 @@ The demo member has a prize **waiting for proof**, so the winner flow can be tri
 - Those five numbers are the ticket for the monthly draw. Match 3, 4 or 5 to win a share.
 - Upload proof of scores to claim a prize, and track it from pending to paid.
 - Give one-off donations, independent of membership.
+- Manage their own profile: display name, and a password change that re-checks
+  the current password first.
 
 **Administrators**
 - Manage members: profiles, their scores, and their subscriptions (via Stripe, plus
@@ -46,45 +46,40 @@ The demo member has a prize **waiting for proof**, so the winner flow can be tri
 
 ---
 
-## Design decisions and resolved ambiguities
+## Design decisions
 
-The PRD says ambiguity is part of the exercise. These are the judgement calls, and why.
+The requirements leave several things open. These are the judgement calls, and why.
 
-**1. Scores are the draw ticket.** The PRD never says where a member's numbers come from.
+**1. Scores are the draw ticket.** Nothing states where a member's numbers come from.
 Scores are bounded 1–45, exactly five are kept, and one draw mode is "weighted by score
 frequency" — that is a 5-from-45 lottery whose ticket is the score set. Everything follows
 from that reading.
 
-**2. A page is missing from the PRD.** Footers run 02→10 then jump to 12; page 11, listed in
-the contents as *§13 Technical Requirements* and *§14 Scalability Considerations*, is absent.
-Both were inferred from the rest of the brief (§15 names Supabase and Vercel; §16 grades
-scalability as extensibility).
-
-**3. Repeated scores count once.** A golfer can shoot the same score twice, so matching uses
+**2. Repeated scores count once.** A golfer can shoot the same score twice, so matching uses
 distinct values. `[30, 30, 12, 7, 41]` against a draw of `[30, 12, 7, 41, 5]` matches **4**.
 
-**4. Backdated scores are refused, not silently dropped.** "A new score replaces the oldest"
+**3. Backdated scores are refused, not silently dropped.** "A new score replaces the oldest"
 would mean a round older than all five is inserted and immediately deleted. Instead it is
 rejected with the cutoff date.
 
-**5. Unclaimed 4- and 3-match prizes go to charity.** §07 says only the jackpot rolls over but
-never says where the others go. They are split between charities in proportion to supporters,
-and reported as their own line.
+**4. Unclaimed 4- and 3-match prizes go to charity.** Only the jackpot rolls over, and nothing
+says where the other two tiers go when nobody matches. They are split between charities in
+proportion to supporters, and reported as their own line.
 
-**6. Rounding remainders carry forward.** Tiers divide equally by integer division; leftover
+**5. Rounding remainders carry forward.** Tiers divide equally by integer division; leftover
 pence roll into next month. Every split is asserted to reconcile exactly.
 
-**7. The pool accrues from active members.** §07 says "based on active subscriber count", so
-the pool is built from who is subscribed at draw time — yearly members contributing a twelfth
-each month — rather than from cash received, which would spike on renewals.
+**6. The pool accrues from active members.** The pool is sized "based on active subscriber
+count", so it is built from who is subscribed at draw time — yearly members contributing a
+twelfth each month — rather than from cash received, which would spike on renewals.
 
-**8. Draws run in calendar order.** Each draw consumes the previous rollover, so back-filling
+**7. Draws run in calendar order.** Each draw consumes the previous rollover, so back-filling
 an earlier month is refused; it would spend the same jackpot twice.
 
-**9. Charity share is capped at 50%.** §08 sets a 10% minimum and no maximum; unbounded, a
-member could leave nothing for the prize pool. Both bounds are admin-configurable.
+**8. Charity share is capped at 50%.** There is a 10% minimum and no stated maximum;
+unbounded, a member could leave nothing for the prize pool. Both bounds are admin-configurable.
 
-**10. One day of timezone slack on score dates.** The database runs on UTC, so a golfer in
+**9. One day of timezone slack on score dates.** The database runs on UTC, so a golfer in
 India logging a round after local midnight would otherwise be told it hasn't happened yet.
 
 ---
@@ -113,7 +108,7 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook --events checkout.s
 ```bash
 npm test            # 160 unit tests — draw engine, prize maths, money, rules
 npm run test:db     # ~70 database checks — triggers, constraints, RLS, privileges
-npm run test:e2e    # 7 HTTP suites against a running app, including real Stripe test mode
+npm run test:e2e    # 8 HTTP suites against a running app, including real Stripe test mode
 npm run typecheck
 npm run lint
 ```

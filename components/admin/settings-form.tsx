@@ -53,7 +53,7 @@ export function SettingsForm({ initial }: { initial: Values }) {
       <fieldset className="grid gap-4 sm:grid-cols-3">
         <legend className="mb-3 font-medium text-ink">Membership split</legend>
         <Field id="pool" label="Prize pool share" value={values.prizePoolPercent} onChange={(v) => setValues({ ...values, prizePoolPercent: v })} hint="Of every payment" />
-        <Field id="min" label="Charity minimum" value={values.charityPercentMin} onChange={(v) => setValues({ ...values, charityPercentMin: v })} hint="PRD requires at least 10%" />
+        <Field id="min" label="Charity minimum" value={values.charityPercentMin} onChange={(v) => setValues({ ...values, charityPercentMin: v })} hint="At least 10%" />
         <Field id="max" label="Charity maximum" value={values.charityPercentMax} onChange={(v) => setValues({ ...values, charityPercentMax: v })} hint={`Up to ${100 - values.prizePoolPercent}% with this pool share`} />
       </fieldset>
       <fieldset className="grid gap-4 sm:grid-cols-3">

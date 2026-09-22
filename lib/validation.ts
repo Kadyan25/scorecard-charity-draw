@@ -83,7 +83,7 @@ export const winnerPayoutSchema = z.object({
   winnerId: z.string().uuid(),
 });
 
-// PRD section 08.1: a charity is chosen at signup, not bolted on afterwards.
+// A charity is chosen at signup, not bolted on afterwards.
 export const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -92,12 +92,25 @@ export const signUpSchema = z.object({
   charityPercent: z.number().int(),
 });
 
+// A member may rename themselves; the column grant in the database is what
+// stops this route being turned into a way to write role or billing fields.
+export const profileUpdateSchema = z.object({
+  fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(120),
+});
+
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(1, "Enter your current password"),
+  newPassword: z.string().min(8, "New password must be at least 8 characters"),
+});
+
 export const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
 export type SignUpInput = z.infer<typeof signUpSchema>;
+export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+export type PasswordChangeInput = z.infer<typeof passwordChangeSchema>;
 
 export type ScoreInput = z.infer<typeof scoreInputSchema>;
 export type CharitySelection = z.infer<typeof charitySelectionSchema>;

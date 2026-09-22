@@ -7,7 +7,7 @@
  * exact cent, using the largest-remainder method: everyone gets the floor of
  * their share, then leftover cents go to the largest fractional remainders.
  *
- * Used to attribute unclaimed 4- and 3-match money (architecture 2.5) to
+ * Used to attribute unclaimed 4- and 3-match money to
  * charities in proportion to how many members support each one.
  */
 export function allocateProRata(totalCents: number, weights: readonly [string, number][]): Map<string, number> {

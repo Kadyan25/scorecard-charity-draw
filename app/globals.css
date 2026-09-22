@@ -3,7 +3,7 @@
 /*
  * Warm editorial palette.
  *
- * PRD section 12 is explicit: this must not read as a golf website. So the base
+ * The spec is explicit: this must not read as a golf website. So the base
  * is paper and ink rather than turf, the accent is a warm ember rather than
  * club green, and the only green in the system is a muted moss used sparingly
  * for positive states - never as brand identity.
@@ -105,7 +105,7 @@
   }
 }
 
-/* PRD section 12 asks for motion throughout, which makes honouring this
+/* The spec asks for motion throughout, which makes honouring this
    preference a requirement rather than a nicety. */
 @media (prefers-reduced-motion: reduce) {
   html {

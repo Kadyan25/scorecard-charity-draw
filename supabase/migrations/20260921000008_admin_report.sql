@@ -1,4 +1,4 @@
--- Aggregates for the admin reports (PRD 11: total users, total prize pool,
+-- Aggregates for the admin reports: total users, total prize pool,
 -- charity contribution totals, draw statistics).
 --
 -- Computed in the database so the report reads a handful of numbers instead of

@@ -1,5 +1,5 @@
 /**
- * Prize pool and contribution arithmetic (PRD sections 07 and 08.1).
+ * Prize pool and contribution arithmetic.
  *
  * Pure functions over integer cents. Every split asserts that it reconciles
  * exactly against its source amount — money is never allowed to evaporate into
@@ -88,7 +88,7 @@ export interface PrizeDistribution {
   paidOutCents: Cents;
   /** Unclaimed jackpot plus undividable remainders — carries to next month. */
   rolloverOutCents: Cents;
-  /** Unclaimed 4- and 3-match pools, routed to charity. See architecture 2.5. */
+  /** Unclaimed 4- and 3-match pools, routed to charity rather than rolled over. */
   charityBonusCents: Cents;
 }
 
@@ -97,11 +97,11 @@ const TIERS: Tier[] = [5, 4, 3];
 /**
  * Distribute a month's pool across its winners.
  *
- * Three rules from the PRD, plus one it leaves open:
+ * Three rules are specified, plus one the requirements leave open:
  *   - Winners inside a tier split that tier equally (section 07).
  *   - An unclaimed 5-match jackpot rolls forward (section 07).
  *   - 4- and 3-match tiers explicitly do NOT roll over (section 07) — but the
- *     PRD never says where unclaimed money goes, so it is routed to the charity
+ *     spec never says where unclaimed money goes, so it is routed to the charity
  *     pool, which is the only destination consistent with the product's stated
  *     purpose. Reported separately so the decision stays visible.
  *   - Cents that will not divide evenly carry into next month's pool.

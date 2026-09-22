@@ -1,4 +1,4 @@
-// Public-site checks (PRD section 12): the pages exist, the homepage tells the
+// Public-site checks: the pages exist, the homepage tells the
 // whole story, and the HTML is useful before JavaScript runs.
 import { createChecker, page } from "./helpers.mjs";
 

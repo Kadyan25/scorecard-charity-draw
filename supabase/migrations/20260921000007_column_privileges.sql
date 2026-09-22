@@ -20,8 +20,8 @@ grant update (full_name, charity_id, charity_percent) on profiles to authenticat
 revoke update on scores from authenticated, anon;
 grant update (value, played_on) on scores to authenticated;
 
--- Charity percentage bounds live in settings (PRD 08.1 minimum, plus the
--- ceiling from architecture 2.7). Enforcing them here means no path — API,
+-- Charity percentage bounds live in settings (a 10% floor, plus a ceiling that
+-- keeps the prize pool fundable). Enforcing them here means no path — API,
 -- direct REST call or admin tool — can store a value the invoice split would
 -- later reject.
 create or replace function public.enforce_charity_percent_bounds()

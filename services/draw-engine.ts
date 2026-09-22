@@ -1,5 +1,5 @@
 /**
- * The monthly draw as one pure computation (PRD sections 06 and 07).
+ * The monthly draw as one pure computation.
  *
  * Everything that decides who wins what lives here, free of I/O, so the whole
  * outcome can be reproduced from its inputs and tested with a seeded RNG. The
@@ -32,7 +32,8 @@ export interface ContributingSubscriber {
 }
 
 /**
- * The month's pool, accrued from every active subscriber (PRD 07: "based on
+ * The month's pool, accrued from every active subscriber (the requirement reads
+ * "based on
  * active subscriber count"). Yearly members contribute a twelfth of their
  * annual share each month, so a renewal month does not spike the jackpot.
  *
@@ -57,7 +58,7 @@ export interface MemberSnapshot {
   scores: number[];
 }
 
-/** PRD 06 eligibility: a live subscription and a complete five-score ticket. */
+/** Eligibility: a live subscription and a complete five-score ticket. */
 export function selectEligibleTickets(members: readonly MemberSnapshot[]): EligibleTicket[] {
   return members
     .filter((member) => member.hasAccess && member.scores.length === TICKET_SIZE)

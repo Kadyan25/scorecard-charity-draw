@@ -45,7 +45,7 @@ next-env.d.ts
 /supabase/.branches
 /supabase/.temp
 
-# source PRD - the company's document, not ours to publish
+# source brief - not ours to publish
 /docs
 
 # local working docs - README.md is the only markdown that ships

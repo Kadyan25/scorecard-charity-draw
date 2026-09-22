@@ -8,7 +8,7 @@ import { allocateProRata } from "@/services/report-rules";
 import { pickGoverningSubscription, resolveAccess } from "@/services/subscription";
 
 /**
- * Admin reporting (PRD 11). Totals come from the admin_report() database
+ * Admin reporting. Totals come from the admin_report() database
  * function; the JSON it returns is parsed rather than trusted, so a schema
  * change surfaces here as a clear error instead of a NaN on the page.
  */

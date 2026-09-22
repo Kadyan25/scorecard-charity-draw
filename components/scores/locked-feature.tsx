@@ -3,7 +3,7 @@ import { Lock } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-/** Shown in place of subscriber-only features (PRD section 04, access control). */
+/** Shown in place of subscriber-only features when access has lapsed. */
 export function LockedFeature({ title, body }: { title: string; body: string }) {
   return (
     <Card className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">

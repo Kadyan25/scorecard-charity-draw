@@ -1,5 +1,5 @@
 /**
- * Pure rules for score entry (PRD section 05). The database enforces the same
+ * Pure rules for score entry. The database enforces the same
  * rules authoritatively; these give the UI and API clean, early answers.
  */
 
@@ -22,12 +22,12 @@ export interface ScoreLike {
 }
 
 export interface TicketSummary {
-  /** Newest first, matching how scores are displayed (PRD section 05). */
+  /** Newest first, matching how scores are displayed. */
   numbers: number[];
   count: number;
   remaining: number;
   complete: boolean;
-  /** Repeated values count once in the draw — see architecture 2.3. */
+  /** Repeated values count once in the draw: a golfer can shoot the same score twice. */
   hasDuplicates: boolean;
   /** The round the next new score would push out, once the ticket is full. */
   nextToReplace: ScoreLike | null;

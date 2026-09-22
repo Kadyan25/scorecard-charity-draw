@@ -13,7 +13,7 @@ import { loadSettings, validateCharityPercent } from "@/services/settings";
 import type { AdminSubscriptionAction } from "@/services/subscription";
 
 /**
- * Admin writes on a member's behalf (PRD 11: edit profiles, edit golf scores,
+ * Admin writes on a member's behalf: edit profiles, edit golf scores,
  * manage subscriptions). Every change is audited with the acting admin. The
  * same database rules apply as for members: the rolling-five and backdate
  * triggers, one score per date, and charity bounds all still hold.

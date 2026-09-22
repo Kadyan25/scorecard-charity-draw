@@ -1,5 +1,5 @@
 /**
- * Winner verification rules (PRD section 09): proof upload, admin review,
+ * Winner verification rules: proof upload, admin review,
  * pending -> paid. Pure, so the state machine can be tested exhaustively.
  */
 

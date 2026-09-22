@@ -3,7 +3,7 @@ import { apiSubscriber, parseJson, withErrors } from "@/lib/api";
 import { scoreInputSchema } from "@/lib/validation";
 import { addScore, listScores } from "@/services/score";
 
-// Score entry is a subscriber feature (PRD section 03); the guard re-checks the
+// Score entry is a subscriber feature; the guard re-checks the
 // subscription on every request rather than trusting an earlier page load.
 export const GET = withErrors(async () => {
   const viewer = await apiSubscriber();

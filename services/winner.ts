@@ -6,7 +6,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { canMarkPaid, canReview, canSubmitProof, validateProof } from "@/services/winner-rules";
 
 /**
- * Winner verification writes (PRD section 09). Members hold no write access to
+ * Winner verification writes. Members hold no write access to
  * the winners table (migration 0007), so every change goes through here with
  * the service role — after ownership and state are checked explicitly.
  */
@@ -80,7 +80,7 @@ export async function reviewWinner(
   await recordAudit({ actorId: adminId, action: `winner.${decision}`, entity: "winner", entityId: winnerId, meta: { note: note ?? null } });
 }
 
-/** Pending -> paid (PRD 09). Conditional update makes a double click harmless. */
+/** Pending -> paid. Conditional update makes a double click harmless. */
 export async function markPaid(adminId: string, winnerId: string): Promise<void> {
   const winner = await loadWinner(winnerId);
   if (!winner) throw new HttpError(404, "That winner could not be found.");

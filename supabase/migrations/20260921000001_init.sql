@@ -1,6 +1,6 @@
 -- Digital Heroes - initial schema
 --
--- Design notes live in architecture.md. Two rules drive most of this file:
+-- Two rules drive most of this file:
 --   1. All money is integer minor units. No numeric/float currency columns.
 --   2. Draw records are snapshots. Editing a score must never alter a past draw.
 
@@ -43,11 +43,11 @@ insert into settings (key, value, description) values
   ('prize_pool_percent', '30'::jsonb,
    'Fixed share of every subscription payment that funds the prize pool'),
   ('charity_percent_min', '10'::jsonb,
-   'Minimum charity contribution, per PRD section 08.1'),
+   'Minimum charity contribution required of every member'),
   ('charity_percent_max', '50'::jsonb,
    'Ceiling added so charity + prize pool can never exceed 100 percent'),
   ('tier_split', '{"5": 40, "4": 35, "3": 25}'::jsonb,
-   'Prize pool share per match tier, per PRD section 07'),
+   'Prize pool share per match tier'),
   ('default_currency', '"GBP"'::jsonb, 'Display and billing currency');
 
 create or replace function setting_int(p_key text)
@@ -235,13 +235,13 @@ create table scores (
   played_on  date not null check (played_on <= current_date),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  -- PRD section 05: one entry per date; an existing entry is edited, not duplicated.
+  -- One entry per date; an existing entry is edited, not duplicated.
   constraint scores_one_per_date unique (user_id, played_on)
 );
 
 create index scores_user_recent_idx on scores (user_id, played_on desc);
 
--- PRD section 05 says a new score replaces the oldest. Taken literally, a
+-- The spec says a new score replaces the oldest. Taken literally, a
 -- backdated score would be inserted then immediately evicted - a silent no-op
 -- the user cannot make sense of. Reject it with the cutoff date instead.
 create or replace function public.reject_backdated_score()
@@ -272,7 +272,7 @@ create trigger scores_reject_backdated
   before insert on scores
   for each row execute function public.reject_backdated_score();
 
--- Only the latest 5 scores are retained (PRD section 05). Enforced in the
+-- Only the latest 5 scores are retained. Enforced in the
 -- database so the rule holds regardless of which client wrote the row.
 create or replace function public.enforce_rolling_score_window()
 returns trigger

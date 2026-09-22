@@ -24,7 +24,7 @@ alter table audit_log      enable row level security;
 
 -- --------------------------------------------------------------------------
 -- Public reference data - readable by anyone, including anonymous visitors
--- (PRD section 03: a public visitor explores charities and draw mechanics).
+-- (a public visitor can explore charities and draw mechanics).
 -- --------------------------------------------------------------------------
 
 create policy "charities are publicly readable"

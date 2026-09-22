@@ -3,7 +3,7 @@ import "server-only";
 import { HttpError } from "@/lib/api";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { SignUpInput } from "@/lib/validation";
+import type { PasswordChangeInput, ProfileUpdateInput, SignUpInput } from "@/lib/validation";
 import { loadSettings, validateCharityPercent } from "@/services/settings";
 
 async function assertCharityAvailable(charityId: string): Promise<void> {
@@ -64,4 +64,35 @@ export async function signOut(): Promise<void> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error(`Sign-out failed: ${error.message}`);
+}
+
+/** A member's own display name. Other profile columns are not writable by them. */
+export async function updateMyProfile(userId: string, input: ProfileUpdateInput): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: input.fullName })
+    .eq("id", userId);
+  if (error) throw new Error(`Could not save your profile: ${error.message}`);
+}
+
+/**
+ * Change password, re-checking the current one first. Supabase would accept the
+ * update on the session alone, which would let anyone who found an unlocked tab
+ * lock the owner out of their own account.
+ */
+export async function changeMyPassword(input: PasswordChangeInput): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const email = auth.user?.email;
+  if (!email) throw new HttpError(401, "Please sign in again.");
+
+  const { error: reauthError } = await supabase.auth.signInWithPassword({
+    email,
+    password: input.currentPassword,
+  });
+  if (reauthError) throw new HttpError(400, "That current password didn't match.");
+
+  const { error } = await supabase.auth.updateUser({ password: input.newPassword });
+  if (error) throw new HttpError(400, error.message);
 }

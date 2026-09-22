@@ -1,4 +1,4 @@
-// End-to-end check of PRD section 11 (admin dashboard): user management,
+// End-to-end check of the admin dashboard: user management,
 // charity management with media and events, settings, reports and access
 // control. Builds its own fixtures and restores everything it touches.
 import { randomBytes } from "node:crypto";

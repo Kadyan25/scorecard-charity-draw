@@ -8,7 +8,7 @@ import { computeDraw, periodIsAfterLatestPublished, type DrawMode } from "@/serv
 import { gatherDrawInputs } from "@/services/draw-inputs";
 
 /**
- * Admin draw operations (PRD section 06: "Simulation before publish", "Admin
+ * Admin draw operations: simulate before publishing, and admin
  * controls publishing"). Callers must already have verified the admin role;
  * these run with the service role because a draw spans every member.
  */

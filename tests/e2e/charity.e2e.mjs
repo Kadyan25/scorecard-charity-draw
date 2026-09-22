@@ -1,4 +1,4 @@
-// End-to-end check of PRD section 08 (charity system) against a running app.
+// End-to-end check of the charity system against a running app.
 // Restores the demo golfer's original charity choice when it finishes.
 import { client, createChecker, env, login, page } from "./helpers.mjs";
 

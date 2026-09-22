@@ -14,7 +14,7 @@ function tierPool(draw: DrawRow, tier: Tier): number {
   return tier === 5 ? draw.tier5_pool_cents : tier === 4 ? draw.tier4_pool_cents : draw.tier3_pool_cents;
 }
 
-/** Where every penny of the month's pool went (PRD section 07). */
+/** Where every penny of the month's pool went. */
 export function PrizeBreakdown({ draw, winners }: { draw: DrawRow; winners: WinnerCounts }) {
   return (
     <div className="space-y-5">

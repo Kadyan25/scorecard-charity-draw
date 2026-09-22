@@ -62,7 +62,7 @@ export async function loadSettings(
   return parseSettings(data ?? []);
 }
 
-/** Enforces PRD section 08.1's minimum and the ceiling added in architecture 2.7. */
+/** Enforces the 10% floor, and the ceiling that keeps the prize pool fundable. */
 export function validateCharityPercent(
   percent: number,
   settings: Pick<PlatformSettings, "charityPercentMin" | "charityPercentMax" | "prizePoolPercent">,
@@ -96,7 +96,7 @@ export function validateSettingsUpdate(update: SettingsUpdate): string | null {
   const whole = (value: number) => Number.isInteger(value) && value >= 0 && value <= 100;
   const values = [update.prizePoolPercent, update.charityPercentMin, update.charityPercentMax, update.tierSplit[5], update.tierSplit[4], update.tierSplit[3]];
   if (!values.every(whole)) return "Every percentage must be a whole number from 0 to 100.";
-  if (update.charityPercentMin < 10) return "The PRD sets a 10% minimum charity contribution.";
+  if (update.charityPercentMin < 10) return "The minimum charity contribution is 10%.";
   if (update.charityPercentMin > update.charityPercentMax) return "The charity minimum cannot be above the maximum.";
   if (update.charityPercentMax + update.prizePoolPercent > 100) {
     return "Charity maximum plus prize pool share cannot exceed 100%.";

@@ -118,7 +118,7 @@ async function portalConfigurationId(): Promise<string | undefined> {
       invoice_history: { enabled: true },
       payment_method_update: { enabled: true },
       customer_update: { enabled: true, allowed_updates: ["email", "name"] },
-      // Cancelling keeps access until the paid period ends (PRD 04 lifecycle).
+      // Cancelling keeps access until the paid period already covered runs out.
       subscription_cancel: { enabled: true, mode: "at_period_end" },
     },
   });

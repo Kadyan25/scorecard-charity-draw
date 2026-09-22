@@ -21,7 +21,7 @@ export type StripeSubscriptionStatus =
   | "paused";
 
 /**
- * PRD section 04 asks for renewal, cancellation and lapsed states. Stripe has
+ * The spec asks for renewal, cancellation and lapsed states. Stripe has
  * more states than that; each collapses onto the one that decides access.
  */
 export function mapStripeStatus(status: StripeSubscriptionStatus | string): SubscriptionStatus {

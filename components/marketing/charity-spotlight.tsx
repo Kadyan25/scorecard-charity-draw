@@ -5,7 +5,7 @@ import { formatCents } from "@/lib/money";
 import type { CharityRow } from "@/lib/supabase/types";
 import type { CharityImpact } from "@/services/charity";
 
-/** Homepage featured-charity section (PRD section 08.2). */
+/** Homepage featured-charity section. */
 export function CharitySpotlight({ charity, impact }: { charity: CharityRow; impact?: CharityImpact }) {
   return (
     <section aria-labelledby="spotlight-heading" className="mx-auto max-w-6xl px-4 sm:px-6">

@@ -1,4 +1,4 @@
-// End-to-end check of PRD sections 06 and 07 (draw and prize pool).
+// End-to-end check of the draw engine and prize pool.
 //
 // The draw is random, so this does not assert who wins. It builds its own
 // members — eligible, short of scores, and lapsed — runs real simulations and a

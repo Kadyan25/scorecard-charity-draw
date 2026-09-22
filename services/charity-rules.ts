@@ -1,5 +1,5 @@
 /**
- * Pure helpers for the charity directory (PRD section 08.2).
+ * Pure helpers for the charity directory.
  */
 
 const MAX_SEARCH_LENGTH = 60;

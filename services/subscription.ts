@@ -1,8 +1,8 @@
 /**
- * Subscription access rules (PRD section 04).
+ * Subscription access rules.
  *
  * Pure so the lifecycle can be tested without Stripe or a database. The
- * route guards call resolveAccess on every authenticated request — the PRD asks
+ * route guards call resolveAccess on every authenticated request — the requirement is
  * for a real-time status check, so nothing here is cached on the client.
  */
 
@@ -35,7 +35,7 @@ function periodStillRunning(periodEnd: string | null, now: Date): boolean {
 }
 
 /**
- * Past-due users lose access: the PRD gives non-subscribers restricted access,
+ * Past-due users lose access: non-subscribers get restricted access,
  * and a failed renewal is not a paid subscription. They are shown a prompt to
  * fix payment rather than being treated as brand new.
  */

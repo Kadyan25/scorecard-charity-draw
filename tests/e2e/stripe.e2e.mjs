@@ -1,4 +1,4 @@
-// End-to-end check of PRD section 04 against Stripe test mode.
+// End-to-end check of subscriptions and payments against Stripe test mode.
 //
 // Needs `stripe listen --forward-to <app>/api/stripe/webhook` running. Checkout
 // sessions are created through our API exactly as the browser would; the

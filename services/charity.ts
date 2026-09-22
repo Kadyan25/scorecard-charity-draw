@@ -29,7 +29,7 @@ export async function listCategories(): Promise<string[]> {
   return [...new Set(charities.map((charity) => charity.category))].sort();
 }
 
-/** Directory search (PRD section 08.2). Filtering happens in the database. */
+/** Directory search. Filtering happens in the database. */
 export async function searchCharities(filters: {
   q?: string;
   category?: string;

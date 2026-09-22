@@ -1,7 +1,7 @@
 /**
  * Draw number generation and matching.
  *
- * The central interpretation (see architecture.md section 1): a subscriber's
+ * The central interpretation this platform is built on: a subscriber's
  * five retained Stableford scores ARE their draw ticket. Scores are bounded
  * 1-45 and exactly five are retained, which is precisely a 5-from-45 lottery.
  *
@@ -122,7 +122,7 @@ export function countMatches(ticket: readonly number[], drawn: readonly number[]
 
 export type Tier = 3 | 4 | 5;
 
-/** Only 3, 4 and 5 matches win anything (PRD section 06). */
+/** Only 3, 4 and 5 matches win anything. */
 export function tierForMatches(matches: number): Tier | null {
   if (matches === 5) return 5;
   if (matches === 4) return 4;

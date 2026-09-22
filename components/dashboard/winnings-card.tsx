@@ -4,7 +4,7 @@ import { Card, CardEyebrow } from "@/components/ui/card";
 import { formatCents } from "@/lib/money";
 import type { WinningsSummary } from "@/services/winner-rules";
 
-/** PRD section 10: total won and current payment status, at a glance. */
+/** Total won and current payment status, at a glance. */
 export function WinningsCard({ summary }: { summary: WinningsSummary }) {
   return (
     <Card>

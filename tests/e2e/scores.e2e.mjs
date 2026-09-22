@@ -1,4 +1,4 @@
-// End-to-end check of PRD section 05 (score management) against a running app.
+// End-to-end check of score management against a running app.
 //
 //   npm run test:e2e
 //
